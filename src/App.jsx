@@ -1,9 +1,8 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
 // Connect to your backend Socket.IO server
-const socket = io("http://localhost:3001"); // 🔗 Match your server URL
+const socket = io("http://localhost:3001"); 
 
 function App() {
   const [room, setRoom] = useState('');
@@ -15,9 +14,29 @@ function App() {
   const joinRoom = () => {
     if (room !== '') {
       socket.emit('join_room', room);
-      setJoinedRoom(true);
     }
   };
+
+  useEffect(() => {
+  // Listen for confirmation from the server
+  socket.on('room_joined', (room) => {
+    setJoinedRoom(true);
+    console.log(`✅ Joined room: ${room}`);
+  });
+
+  // Optional: handle connection errors
+  socket.on('connect_error', (err) => {
+    alert("Failed to connect to server.");
+    console.error("Socket connection error:", err);
+  });
+
+  return () => {
+    socket.off('room_joined');
+    socket.off('connect_error');
+  };
+}, []);
+
+
 
   // Send a message
   const sendMessage = () => {
